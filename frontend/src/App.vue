@@ -32,6 +32,14 @@ if (showAd.value) {
 }
 
 onMounted(async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const jwt = urlParams.get('jwt');
+  if (jwt) {
+    localStorage.setItem('auth_token', jwt);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    window.location.href = '/#/';
+    return;
+  }
   try {
     await api.getUserSettings();
   } catch (error) {
