@@ -2,24 +2,88 @@
 # CHANGE LOG
 
 <p align="center">
-  <a href="CHANGELOG.md">🇨🇳 中文</a> |
-  <a href="CHANGELOG_EN.md">🇺🇸 English</a>
+  <a href="CHANGELOG.md">中文</a> |
+  <a href="CHANGELOG_EN.md">English</a>
 </p>
 
-## v1.4.0(main)
+## v1.6.0(main)
+
+### Features
+
+### Bug Fixes
+
+### Improvements
+
+## v1.5.0(main)
+
+### Features
+
+- feat: |Admin| Admin account list now supports column sorting (ID, name, created at, updated at, mail count, send count), search automatically resets pagination to page 1 (#918)
+- feat: |Admin API| `/admin/new_address` endpoint now returns `address_id` field, avoiding additional query after address creation (#912)
+- feat: |Create Address| Add `ENABLE_CREATE_ADDRESS_SUBDOMAIN_MATCH` switch and an admin-panel toggle for suffix-based subdomain matching in create-address APIs; when enabled, `foo.example.com` can match base domain `example.com`
+- feat: |Auto Reply| Add regex matching support for sender filter using `/pattern/` syntax (e.g. `/@example\.com$/`), backward compatible with prefix matching
+- feat: |Turnstile| Add global Turnstile CAPTCHA for all login forms via `ENABLE_GLOBAL_TURNSTILE_CHECK` env var (#767)
+- feat: |Telegram| Support sending email attachments in Telegram push (50MB per file limit), multiple attachments sent via `sendMediaGroup`, controlled by `ENABLE_TG_PUSH_ATTACHMENT` env var (#894)
+- feat: |Mail Storage| Support enabling gzip-compressed email storage via `ENABLE_MAIL_GZIP` variable (#823)
+  - Run database migration before enabling it: `Admin -> Quick Setup -> Database -> Migrate Database`, or call `POST /admin/db_migration`
+  - New emails are stored in `raw_blob` and reads stay compatible with `raw` / `raw_blob`; compression and decompression add CPU overhead, so a paid Worker plan is recommended
+
+### Bug Fixes
+
+- fix: |Auto Reply| Fix auto-reply not triggering when `source_prefix` is empty string (#459), empty value now correctly matches all senders
+- fix: |OAuth2| Fix OAuth2 login callback failure on Android via browser and other mobile browsers due to sessionStorage loss during redirect, add localStorage fallback (#900)
+- fix: |IMAP| Fix nested reply email mojibake, Gmail empty Content-Type header parsing failure, missing Date header, and locale-dependent date formatting issues
+
+### Testing
+
+- test: |E2E| Add create-address subdomain matching tests covering default exact-match behavior, admin-enabled matching, and env=false hard-disable precedence
+- test: |E2E| Add auto-reply trigger E2E tests covering empty prefix, prefix matching, regex matching, and disabled state
+
+### Docs
+
+- docs: |Create Address| Update create-address API, worker variables, and subdomain docs to clarify the difference between explicitly specified subdomains and random subdomains
+- docs: |API| Add clarification between Address JWT and User JWT to avoid confusion; reorganize documentation menu structure with dedicated API Endpoints section (#910)
+- docs: |Telegram| Add per-user mail push and global push documentation (#769)
+- docs: |Webhook| Add webhook template examples for Telegram Bot, WeChat Work, Discord and other common push platforms
+- feat: |Webhook| Add Telegram Bot, WeChat Work, Discord preset templates to frontend webhook settings
+
+### Improvements
+
+## v1.4.0
 
 ### Features
 
 - feat: |User Registration| Add email regex validation for user registration, admins can configure email format validation rules
+- feat: |Frontend| Add configurable Status menu button via `STATUS_URL` environment variable for status monitoring page link
+- feat: |SMTP| Add STARTTLS support for SMTP proxy server via `smtp_tls_cert` and `smtp_tls_key` environment variables
+- feat: |Webhook| Add preset templates dropdown to Webhook settings page, supporting one-click fill for Message Pusher, Bark, and ntfy
 
 ### Bug Fixes
 
+- fix: |Telegram| Fix admin users unable to view emails via Telegram MiniApp due to `Auth date expired` error, support admin password auth for viewing emails
+- fix: |Admin API| Fix `/admin/account_settings` throwing `Cannot read properties of undefined (reading 'put')` when KV is not configured and `fromBlockList` is empty
+- fix: |Database| Fix missing `idx_raw_mails_message_id` index in `DB_INIT_QUERIES` causing full table scan on `UPDATE raw_mails ... WHERE message_id = ?`, sync `schema.sql` with init code, add v0.0.6 migration
 - fix: |Docs| Fix User Mail API documentation incorrectly using `x-admin-auth`, changed to correct `x-user-token`
+- fix: |Frontend| Fix email content text being unreadable in dark theme, improve dark mode styles for plain text mail and Shadow DOM rendering
 - docs: |Docs| Add Admin API documentation for delete mail, delete address, clear inbox, and clear sent items
+- fix: |Frontend| Fix reply to HTML email losing original HTML content, prefer HTML message over plain text
+- fix: |Security| Fix XSS vulnerability in reply/forward mail content, sanitize HTML with DOMPurify whitelist and escape plain text
+- fix: |API| Fix typo in `requset_send_mail_access` API path, renamed to `request_send_mail_access`
+
+### Testing
+
+- test: |E2E| Add Dockerized E2E test environment (Playwright + Mailpit), run with `cd e2e && npm test`
+- test: |E2E| Cover API health check, address lifecycle, SMTP send, inbox UI, HTML reply & XSS sanitization
+- test: |Worker| Add `/admin/test/seed_mail` test endpoint, only available when `E2E_TEST_MODE` is enabled
 
 ### Improvements
 
 - style: |Mail List| Improve empty state display for inbox and sent box, show different messages based on mail count, add semantic icons
+- feat: |Admin| Add ip.im lookup link for source IP in address list, click to quickly view IP information
+- docs: |Docs| Fix VitePress i18n language switch path error, use dual-prefix locale configuration
+- feat: |IMAP Proxy| Refactor IMAP server into separate modules (HTTP client, mailbox, message), use `deferToThread` for async HTTP to avoid blocking Twisted reactor, use backend `id` as stable UID, add STARTTLS support, LRU message cache, session-local flags management, SEARCH command support, JWT credential and address+password dual login methods, and comprehensive test suite
+- fix: |IMAP Proxy| Fix `getHeaders()` filtering and `store()` crash
+- fix: |Email Parser| Fix `parse_email.py` using private `_payload` attribute causing encoding errors, use `get_payload(decode=True)` for proper email body decoding
 
 ## v1.3.0
 

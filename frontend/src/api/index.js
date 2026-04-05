@@ -74,6 +74,7 @@ const getOpenSettings = async (message, notification) => {
             maxAddressLen: res["maxAddressLen"] || 30,
             needAuth: res["needAuth"] || false,
             defaultDomains: res["defaultDomains"] || [],
+            randomSubdomainDomains: res["randomSubdomainDomains"] || [],
             domains: res["domains"].map((domain, index) => {
                 return {
                     label: domainLabels.length > index ? domainLabels[index] : domain,
@@ -92,6 +93,8 @@ const getOpenSettings = async (message, notification) => {
             enableWebhook: res["enableWebhook"] || false,
             isS3Enabled: res["isS3Enabled"] || false,
             enableAddressPassword: res["enableAddressPassword"] || false,
+            statusUrl: res["statusUrl"] || "",
+            enableGlobalTurnstileCheck: res["enableGlobalTurnstileCheck"] || false,
         });
         if (openSettings.value.needAuth) {
             showAuth.value = true;
